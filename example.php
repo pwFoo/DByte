@@ -29,22 +29,14 @@ $pdo = new PDO(
 );
 
 // Create a new DB class object
-DB::$c = $pdo;
-
-// PostgreSQL Users need to do this:
-//DB::$p = TRUE;
-
-// PostgreSQL & SQLite users need to do this:
-//DB::$i = '"';
-
+$db = new DB($pdo);
 
 /*
  * CRUD Queries
  */
 
-
 // Create a test table
-DB::query("DROP TABLE IF EXISTS `users`;
+$db->query("DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(50) DEFAULT NULL,
@@ -60,7 +52,7 @@ $user = array(
 	'email' => 'mary@example.org',
 	'created' => time()
 );
-$result = DB::insert('users', $user);
+$result = $db->insert('users', $user);
 var_dump($result);
 
 
@@ -69,7 +61,7 @@ $user = array(
 	'email' => 'john@example.com',
 	'created' => time()
 );
-$result = DB::insert('users', $user);
+$result = $db->insert('users', $user);
 var_dump($result);
 
 
@@ -78,7 +70,7 @@ $user = array(
 	'email' => 'bobb@example.com',
 	'created' => time()
 );
-$result = DB::insert('users', $user);
+$result = $db->insert('users', $user);
 var_dump($result);
 
 
@@ -87,7 +79,7 @@ $user = array(
 	'email' => 'icanhaz@email.com',
 	'created' => time()
 );
-$result = DB::insert('users', $user);
+$result = $db->insert('users', $user);
 var_dump($result);
 
 
@@ -96,12 +88,12 @@ $user = array(
 	'username' => 'Bob',
 	'email' => 'bob@example.com',
 );
-$result = DB::update('users', $user, 3);
+$result = $db->update('users', $user, 3);
 var_dump($result);
 
 
 // Our moderators say that the "Troll" user needs to be deleted!
-$result = DB::query('DELETE FROM users WHERE username = ?', array('Troll'));
+$result = $db->query('DELETE FROM users WHERE username = ?', array('Troll'));
 var_dump($result);
 
 
@@ -111,25 +103,25 @@ var_dump($result);
 
 
 // Count all the users
-$result = DB::column('SELECT COUNT(*) FROM `users`');
+$result = $db->column('SELECT COUNT(*) FROM `users`');
 var_dump('Total users: '. $result);
 br();
 
 
 // Get user number 2 (John)
-$result = DB::row('SELECT * FROM `users` WHERE id = ?', array(3));
+$result = $db->row('SELECT * FROM `users` WHERE id = ?', array(3));
 var_dump($result);
 br();
 
 
 // Fetch all the users!
-$result = DB::fetch('SELECT * FROM `users`');
+$result = $db->fetch('SELECT * FROM `users`');
 var_dump($result);
 br();
 
 
 // Fetch users from "example.com"
-$result = DB::fetch('SELECT * FROM `users` WHERE email LIKE ?', array('%example.com'));
+$result = $db->fetch('SELECT * FROM `users` WHERE email LIKE ?', array('%example.com'));
 var_dump($result);
 br();
 
@@ -139,5 +131,5 @@ br();
  */
 
 
-print count(DB::$q) . " Queries Run:\n";
-print_r(DB::$q);
+print count($db->$queries) . " Queries Run:\n";
+print_r($db->$queries);
