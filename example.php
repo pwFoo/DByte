@@ -131,5 +131,5 @@ br();
  */
 
 
-print count($db->$queries) . " Queries Run:\n";
-print_r($db->$queries);
+print count($db->queries) . " Queries Run:\n";
+print_r($db->queries);
