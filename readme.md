@@ -13,31 +13,31 @@ However, when you query a database you generally want a certain type of result b
 
 ### I want a single column
 
-	$count = $db->$queriescolumn('SELECT COUNT(*) FROM `user`);
+	$count = $db->column('SELECT COUNT(*) FROM `user`);
 
 ### I want an array(key => value) results (i.e. for making a selectbox)
 
-	$pairs = $db->$queriespairs('SELECT `id`, `username` FROM `user`);
+	$pairs = $db->pairs('SELECT `id`, `username` FROM `user`);
 
 ### I want a single row result
 
-	$user = $db->$queriesrow('SELECT * FROM `user` WHERE `id` = ?', array($user_id));
+	$user = $db->row('SELECT * FROM `user` WHERE `id` = ?', array($user_id));
 
 ### I want an array of results (even an empty array!)
 
-	$banned_users = $db->$queriesfetch('SELECT * FROM `user` WHERE `banned` = ?, array(TRUE));
+	$banned_users = $db->fetch('SELECT * FROM `user` WHERE `banned` = ?, array(TRUE));
 
 ### I want to insert a new record
 
-	$db->$queriesinsert('user', $array);
+	$db->insert('user', $array);
 
 ### I want to update a record
 
-	$db->$queriesupdate('user', $array, $user_id);
+	$db->update('user', $array, $user_id);
 
 ### I want to delete a record
 
-	$db->$queriesquery('DELETE FROM `user` WHERE `id` = ?', array($user_id));
+	$db->query('DELETE FROM `user` WHERE `id` = ?', array($user_id));
 
 # Notes / Advanced Usage
 
