@@ -1,20 +1,29 @@
 <?php
-/**
- * Provides a database wrapper around the PDO service to help reduce the effort
- * to interact with a RDBMS such as SQLite, MySQL, or PostgreSQL.
- *
- * 	DB::$c = new PDO($dsn);
- *
- * @author	David Pennington
- * @copyright	(c) 2012 xeoncross.com
- * @license	MIT License <http://www.opensource.org/licenses/mit-license.php>
- ********************************** 80 Columns *********************************
- */
 namespace DByte;
+class DB {
+    private $conn   = null;
+    private $marks  = '`';
+    private $pgsql  = false;
+    public $queries  = array();
 
-class DB
-{
-	static $q,$c,$p,$i = '`';
+    public function __construct($pdo) {
+        $this->conn = $pdo;
+        
+        switch ($pdo->getAttribute(\PDO::ATTR_DRIVER_NAME)) {
+            case "mysql": 
+                $this->marks = '`';
+                $this->pgsql = false;
+                break;
+            case "sqlite":
+                $this->marks = '"';
+                $this->pgsql = false;
+                break;
+            case "pgsql":
+                $this->marks = '"';
+                $this->pgsql = true;
+                break;
+        }
+    }   
 
 	/**
 	 * Fetch a column offset from the result set (COUNT() queries)
@@ -24,7 +33,7 @@ class DB
 	 * @param integer $key index of column offset
 	 * @return array|null
 	 */
-	static function column($query, $params = NULL, $key = 0)
+	public function column($query, $params = NULL, $key = 0)
 	{
 		if($statement = DB::query($query, $params))
 			return $statement->fetchColumn($key);
@@ -37,7 +46,7 @@ class DB
 	 * @param array $params query parameters
 	 * @return mixed
 	 */
-	static function row($query, $params = NULL)
+	public function row($query, $params = NULL)
 	{
 		if($statement = DB::query($query, $params))
 			return $statement->fetch();
@@ -51,7 +60,7 @@ class DB
 	 * @param array $params query parameters
 	 * @return array
 	 */
-	static function pairs($query, $params = NULL)
+	public function pairs($query, $params = NULL)
 	{
 		$data = array();
 
@@ -70,7 +79,7 @@ class DB
 	 * @param int $column the optional column to return
 	 * @return array
 	 */
-	static function fetch($query, $params = NULL, $column = NULL)
+	public function fetch($query, $params = NULL, $column = NULL)
 	{
 		if( ! $statement = DB::query($query, $params)) return;
 
@@ -88,9 +97,10 @@ class DB
 	 * @param array $params query parameters
 	 * @return object|null
 	 */
-	static function query($query, $params = NULL)
+	public function query($query, $params = NULL)
 	{
-		$statement = static::$c->prepare(DB::$q[] = strtr($query, '`', DB::$i));
+        //$statement = static::$c->prepare(DB::$q[] = strtr($query, '`', DB::$i));
+        $statement = $this->conn->prepare($this->queries[] = $query);
 		$statement->execute($params);
 		return $statement;
 	}
@@ -102,12 +112,12 @@ class DB
 	 * @param array $data
 	 * @return integer|null
 	 */
-	static function insert($table, array $data)
+	public function insert($table, array $data)
 	{
-		$query = "INSERT INTO `$table` (`" . implode('`, `', array_keys($data))
-			. '`) VALUES (' . rtrim(str_repeat('?, ', count($data = array_values($data))), ', ') . ')';
-		return DB::$p
-			? DB::column($query . ' RETURNING `id`', $data)
+		$query = "INSERT INTO {$this->marks}$table{$this->marks} ({$this->marks}" . implode("{$this->marks}, {$this->marks}", array_keys($data))
+			. "{$this->marks}) VALUES (" . rtrim(str_repeat('?, ', count($data = array_values($data))), ', ') . ')';
+		return $this->pgsql
+			? DB::column($query . " RETURNING {$this->marks}id{$this->marks}", $data)
 			: (DB::query($query, $data) ? static::$c->lastInsertId() : NULL);
 	}
 
@@ -119,11 +129,11 @@ class DB
 	 * @param array $w where conditions
 	 * @return integer|null
 	 */
-	static function update($table, $data, $value, $column = 'id')
+	public function update($table, $data, $value, $column = 'id')
 	{
-		$keys = implode('`=?,`', array_keys($data));
+		$keys = implode("{$this->marks}=?,{$this->marks}", array_keys($data));
 		if($statement = DB::query(
-			"UPDATE `$table` SET `$keys` = ? WHERE `$column` = ?",
+			"UPDATE {$this->marks}$table{$this->marks} SET {$this->marks}$keys{$this->marks} = ? WHERE {$this->marks}$column{$this->marks} = ?",
 			array_values($data + array($value))
 		))
 			return $statement->rowCount();
